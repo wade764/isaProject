@@ -10,7 +10,7 @@
 .label printf
 
 .data 0x100
-.label sia
+.label sia // static integer array a
 50
 43
 100
@@ -18,7 +18,7 @@
 -10
 50
 0
-.label sib
+.label sib // static integer array b
 500
 43
 100
