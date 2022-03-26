@@ -106,6 +106,16 @@ mov r15, r14       // return
 //     cav = cmp_arrays(sia, sib);
 // }
 .label main
+// added code below 
+// int ia[] = {2,3,5,1,0};
+mov r4, 2
+mov r5, 3
+mov r6, 5
+mov r7, 1
+mov r8, 0
+
+// code above is added
+
 sbi sp, sp, 16     // allocate space for stack
                    // [sp,0] is int cav
                    // [sp,4] is int n
