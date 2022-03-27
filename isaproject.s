@@ -1,4 +1,6 @@
 // "I pledge" Wade Nelson
+//*** I am using this to signify my added code
+
 
 // The code you must implement is provided in ISAproject.pdf
 
@@ -26,6 +28,29 @@
 -10
 50
 0
+//***
+.label string1
+.string // cmp_arrays(sia, sib): %d
+.label string2
+.string // cmp_arrays(sia, sia): %d
+.label string3
+.string // cmp_arrays(ia, sia): %d
+.label fmt3
+.string // ia[%d]: %d
+.label smallest1
+.string // smallest(ia): %d
+.label smallest2
+.string // smallest(sia): %d
+.label factorial1
+.string // factorial(4) ia: %d
+.label factorial2
+.string // factorial(7) ia: %d
+.label cmp_print
+.string // s1: %d, s2: %d
+.label goodstring
+.string // Nice sort and smallest
+//***
+
 .label fmt1
 .string //sia[%d]: %d
 .label fmt2
@@ -106,15 +131,48 @@ mov r15, r14       // return
 //     cav = cmp_arrays(sia, sib);
 // }
 .label main
+//***
 // added code below 
 // int ia[] = {2,3,5,1,0};
-mov r4, 2
-mov r5, 3
-mov r6, 5
-mov r7, 1
-mov r8, 0
+// allocating mem on stack for array
+sbi sp, sp, 20 // allocate space for stack
+                   // [sp,0] is int 2
+                   // [sp,4] is int 3
+                   // [sp,8] is int 5
+                   // [sp,12] is int 1
+                   // [sp,16] is int 0
+str lr, [sp, 20]   // [sp,20] is lr (save lr)
+mov r0, 2
+str r0, [sp, 0]
+mov r0, 3
+str r0, [sp, 4]
+mov r0, 5
+str r0, [sp, 8]
+mov r0, 1
+str r0, [sp, 12]
+mov r0, 0
+str r0, [sp, 16]
 
+mva r0, string1
+blr printf
+
+mva r0, string2
+blr printf
+
+mov r0, 4
+mva r1, sib
+str r0, [r1, 0]
+
+mva r0, string1
+blr printf
+
+mva r0, string3
+blr printf
+
+mva r0, sp
+bal sort // this is calling sort(ia) the sp is at ia[0] 
 // code above is added
+//***
 
 sbi sp, sp, 16     // allocate space for stack
                    // [sp,0] is int cav
