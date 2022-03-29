@@ -1,7 +1,6 @@
 // "I pledge" Wade Nelson
 //*** I am using this to signify my added code
 
-
 // The code you must implement is provided in ISAproject.pdf
 
 // Define stack start address
@@ -29,6 +28,12 @@
 50
 0
 //***
+// two labels below used in sort // *** I am questioning if these are needed
+.label s
+0 // temp value should equal the numelems(ia)
+.label t
+0 // temp value should equal the numelems(ia)
+
 .label string1
 .string // cmp_arrays(sia, sib): %d
 .label string2
@@ -76,21 +81,43 @@ mov r0, -1         // hardcode to return -1
 mov r15, r14       // return
 
 .text 0x500
+
 // r0 has ia - address of null terminated array
 // numelems is a leaf function
 // If you only use r0, r1, r2, r3; you do not need a stack
 .label numelems
-mov r0, 0xa        // hardcode to return a 10
+//***
+mov r0, 0 //this is the literal 0
+mov r2, 0 //this is the counter variable c
+adi sp, sp, 16 // adding to the stack pointer 16 to get the starting address
+               // of ia[0] that holds 5 elements
+str r1, [sp, 0] // moving the value of the stack pointer into r1
+.label while1 // the while loop
+str r1, sp
+cmp r0, r1 // comparing the value of r0 to r1 while (*ia++ != 0)
+adi sp, sp, 4 // incrementing the sp r13
+adi r2, [r2, 1] // *** I am confused how to add to the counter variable
+blt while1 // branching if the value != 0
+//***
+
+//mov r0, 0xa        // hardcode to return a 10
+
 .label break
-mov r15, r14       // return
+mov r15, r14       // return // the numelems is in r2
 
 .text 0x600
 // r0 has ia - address of null terminated array
 // sort must allocate a stack
 // Save lr on stack and allocate space for local vars
-.label sort
-                   // Allocate stack
-// blr numelems    // count elements in ia[]
+.label sort // uses bubblesort to sort the elements in the array
+// this uses a variable s set to the numelems(ia)
+// two nested for loops, variables i, j
+// int t used as a temp variable
+// int literal 1
+sbi sp, sp, 16     // Allocate stack  // sub 16 because there are 4 variables s, t, i, j
+blr numelems       // count elements in ia[] // *** the sp should be shift up 16 bytes
+// numelems returns and the num is stored in r2
+
                    // create nested loops to sort
 		   // Deallocate stack
 mov r15, r14       // return - sort is a void function
@@ -135,7 +162,7 @@ mov r15, r14       // return
 // added code below 
 // int ia[] = {2,3,5,1,0};
 // allocating mem on stack for array
-sbi sp, sp, 20 // allocate space for stack
+sbi sp, sp, 24 // allocate space for stack // I had this at 20 but think 24 is right now
                    // [sp,0] is int 2
                    // [sp,4] is int 3
                    // [sp,8] is int 5

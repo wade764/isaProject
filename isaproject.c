@@ -20,7 +20,7 @@ int numelems(int *ia) {
         c++;
     return c; }
 
-    void sort(int *ia) {
+void sort(int *ia) {
         int s = numelems(ia);
         for (int i = 0; i < s; i++)
             for (int j = 0; j < s-1-i; j++)
