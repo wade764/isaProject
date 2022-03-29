@@ -86,22 +86,28 @@ mov r15, r14       // return
 // numelems is a leaf function
 // If you only use r0, r1, r2, r3; you do not need a stack
 .label numelems
-// FIX THIS
 //***
-mov r1, 0 //this is the literal 0
+// JUNK //mov r1, 0 //this is the literal 0
 mov r2, 0 //this is the counter variable c
-//adi sp, sp, 16 // adding to the stack pointer 16 to get the starting address
+// JUNK //adi sp, sp, 16 // adding to the stack pointer 16 to get the starting address
                // of ia[0] that holds 5 elements
-//str r3, [sp, 0] // moving the value of the stack pointer into r1
+// JUNK //str r3, [sp, 0] // moving the value of the stack pointer into r1
 .label while1 // the while loop
-//str r3, sp
-ldr r3, [r0]
-cmp r0, r1 // comparing the value of r0 to r1 while (*ia++ != 0)
-adi sp, sp, 4 // incrementing the sp r13
-adi r2, [r2, 1] // *** I am confused how to add to the counter variable
-blt while1 // branching if the value != 0
+// JUNK //str r3, sp
+// JUNK //ldr r3, [r0]
+ldr r1, [r0], 4  // this is a post increment equivalent to ia[0]++
+
+cmp r1, 0 // comparing the value of r1 to r0 *ia++ != 0
+// JUNK // adi sp, sp, 4 // incrementing the sp r13
+//JUNK //adi r2, [r2, 1] // *** I am confused how to add to the counter variable
+//JUNK  blt while1 // branching if the value != 0
+beq done
+adi r2, r2, 1
+bal while1
+.label done
+mov r0, r2
+mov r15, r14 // moves the link register to the program counter
 //***
-// FIX ABOVE
 
 //mov r0, 0xa        // hardcode to return a 10
 
@@ -138,7 +144,8 @@ str r2, [sp, 0]    // s = numelems(ia)
 .label for1
 str r1, [sp, 8] // counter i = 0
 cmp r1, r2      // i < s
-blt // *** trouble thinking of how to for nested for loops here
+// STUCK HERE
+// blt // *** trouble thinking of how to for nested for loops here
 
 
                    // Deallocate stack
