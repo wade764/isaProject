@@ -86,19 +86,22 @@ mov r15, r14       // return
 // numelems is a leaf function
 // If you only use r0, r1, r2, r3; you do not need a stack
 .label numelems
+// FIX THIS
 //***
-mov r0, 0 //this is the literal 0
+mov r1, 0 //this is the literal 0
 mov r2, 0 //this is the counter variable c
-adi sp, sp, 16 // adding to the stack pointer 16 to get the starting address
+//adi sp, sp, 16 // adding to the stack pointer 16 to get the starting address
                // of ia[0] that holds 5 elements
-str r1, [sp, 0] // moving the value of the stack pointer into r1
+//str r3, [sp, 0] // moving the value of the stack pointer into r1
 .label while1 // the while loop
-str r1, sp
+//str r3, sp
+ldr r3, [r0]
 cmp r0, r1 // comparing the value of r0 to r1 while (*ia++ != 0)
 adi sp, sp, 4 // incrementing the sp r13
 adi r2, [r2, 1] // *** I am confused how to add to the counter variable
 blt while1 // branching if the value != 0
 //***
+// FIX ABOVE
 
 //mov r0, 0xa        // hardcode to return a 10
 
@@ -115,11 +118,30 @@ mov r15, r14       // return // the numelems is in r2
 // int t used as a temp variable
 // int literal 1
 sbi sp, sp, 16     // Allocate stack  // sub 16 because there are 4 variables s, t, i, j
+
+mov r1, 0
+str r1, [sp, 0] // variable s = 0
+mov r1, 0
+str r1, [sp, 4] // variable t = 0
+mov r1, 0
+str r1, [sp, 8] // variable i = 0
+mov r1, 0
+str r1, [sp, 12] // variable j = 0
+
+
 blr numelems       // count elements in ia[] // *** the sp should be shift up 16 bytes
 // numelems returns and the num is stored in r2
 
+str r2, [sp, 0]    // s = numelems(ia)
+
                    // create nested loops to sort
-		   // Deallocate stack
+.label for1
+str r1, [sp, 8] // counter i = 0
+cmp r1, r2      // i < s
+blt // *** trouble thinking of how to for nested for loops here
+
+
+                   // Deallocate stack
 mov r15, r14       // return - sort is a void function
 
 .text 0x700
@@ -191,12 +213,14 @@ mva r1, sib
 str r0, [r1, 0]
 
 mva r0, string1
+//mov r1, r0
+//mva r0, string1
 blr printf
 
 mva r0, string3
 blr printf
 
-mva r0, sp
+mov r0, sp
 bal sort // this is calling sort(ia) the sp is at ia[0] 
 // code above is added
 //***
