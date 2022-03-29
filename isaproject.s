@@ -92,27 +92,29 @@ mov r2, 0 //this is the counter variable c
 // JUNK //adi sp, sp, 16 // adding to the stack pointer 16 to get the starting address
                // of ia[0] that holds 5 elements
 // JUNK //str r3, [sp, 0] // moving the value of the stack pointer into r1
-.label while1 // the while loop
+.label loop_numelems // the while loop
 // JUNK //str r3, sp
 // JUNK //ldr r3, [r0]
 ldr r1, [r0], 4  // this is a post increment equivalent to ia[0]++
+                 //*ia to r0, ia++
 
 cmp r1, 0 // comparing the value of r1 to r0 *ia++ != 0
+          // *ia == 0
+
 // JUNK // adi sp, sp, 4 // incrementing the sp r13
 //JUNK //adi r2, [r2, 1] // *** I am confused how to add to the counter variable
 //JUNK  blt while1 // branching if the value != 0
-beq done
+beq done_numelems
 adi r2, r2, 1
-bal while1
-.label done
+bal loop_numelems
+.label done_numelems
 mov r0, r2
 mov r15, r14 // moves the link register to the program counter
 //***
 
 //mov r0, 0xa        // hardcode to return a 10
-
-.label break
-mov r15, r14       // return // the numelems is in r2
+//.label break
+//mov r15, r14       // return // the numelems is in r2
 
 .text 0x600
 // r0 has ia - address of null terminated array
@@ -156,9 +158,36 @@ mov r15, r14       // return - sort is a void function
 // smallest must allocate a stack
 // Save lr on stack and allocate space for local vars
 .label smallest
+//***
+sbi sp, sp, 16 // DOUBLE CHECK THE VALUE I AM SUBTRACTING
+str r0, [sp, 0]         // sotres ia on stack
+mov r1, 0
+str r1, [sp, 8]         // sm = 0
+str r14, [sp, 12]        // stores lr on stack
+// func entry sequence above this comment
+blr numelems            // count elems in ia[]
+str r0, [sp, 4]         // save num elems on stack
+//***
                    // Allocate stack
 // blr numelems    // count elements in ia[]
                    // create loop to find smallest
+
+//***
+ldr r0, [sp, 0]    // address of ia into r0
+ldr r1, [r0]       // ia[0] into r1
+str r1, [sp, 8]    // sm = *ia
+ldr r3, [sp,0]     // int *p = ia;
+ldr r2, [sp, 0]    // r2 has ia
+mov r2, 4
+mul r0, r0, r2     // num elems * 4
+ldr r2, [sp, 4]    // numelems to r0
+add r2, r2, r0  // ia + s
+
+adi r2, r2, 24
+
+.label sm_loop    
+//***
+
 mov r0, 2          // hardcode to return a 2
 		   // Deallocate stack
 mov r15, r14       // return
@@ -275,6 +304,11 @@ bal loop4times
 mva r0, sia        // put address of sia in r0
 blr numelems       // n = numelems(sia)
 str r0, [sp, 4]
+//***
+mov r1, r0
+mva r0, fmt3
+blr printf
+
 // int sm1 = smallest(sia);
 mva r0, sia        // put address of sia in r0
 blr smallest       // sm1 = smallest(sia)
