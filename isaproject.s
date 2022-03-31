@@ -74,6 +74,13 @@ mov r15, r14       // return
 // cmp_arrays must allocate a stack
 // Save lr on stack and allocate space for local vars
 .label cmp_arrays
+//***
+sbi sp, sp, 60 // subtracting 60 bytes, 14 (4 bytes) for the static array values, and 4 for the lr
+
+// this immediately uses sum_array()
+
+//***
+
                    // Allocate stack
                    // Call sum_array two times
 mov r0, -1         // hardcode to return -1
@@ -160,13 +167,14 @@ mov r15, r14       // return - sort is a void function
 .label smallest
 //***
 sbi sp, sp, 16 // DOUBLE CHECK THE VALUE I AM SUBTRACTING
-str r0, [sp, 0]         // sotres ia on stack
+str r0, [sp, 0]         // stores ia on stack
 mov r1, 0
 str r1, [sp, 8]         // sm = 0
 str r14, [sp, 12]        // stores lr on stack
 // func entry sequence above this comment
 blr numelems            // count elems in ia[]
 str r0, [sp, 4]         // save num elems on stack
+
 //***
                    // Allocate stack
 // blr numelems    // count elements in ia[]
@@ -177,18 +185,48 @@ ldr r0, [sp, 0]    // address of ia into r0
 ldr r1, [r0]       // ia[0] into r1
 str r1, [sp, 8]    // sm = *ia
 ldr r3, [sp,0]     // int *p = ia;
-ldr r2, [sp, 0]    // r2 has ia
-mov r2, 4
-mul r0, r0, r2     // num elems * 4
-ldr r2, [sp, 4]    // numelems to r0
-add r2, r2, r0  // ia + s
 
+ldr r0, [sp, 4]         // loading the number of elem into r0
+
+mov r2, 4               // 4 is for the size of type
+mul r0, r0, r2     // num elems * 4
+
+str r0, [sp, 4]    // storing the total num of elements * 4 back on to the stack at the 4th byte
+
+//ldr r2, [sp, 4]    // numelems to r0
+//add r2, r2, r0  // ia + s
+
+ldr r5, [sp, 0]    // r5 has ia
+add r6, r5, r0          // r6 has ia + s
 adi r2, r2, 24
 
 .label sm_loop    
 //***
 
-mov r0, 2          // hardcode to return a 2
+ldr r4, [sp, 0] // this is p the int* in the loop
+cmp r4, r6      // p < ia+s
+bge sm_done        // branches to done if they equal
+
+ldr r7, [r4], 4         // this post increments the value of *ia 
+
+ldr r8, [sp, 8] // loads the current smallest into r8
+
+cmp r7, r8      // comparing *p < sm
+
+bge sm_skip
+// if it doesnt skip then you have to store r7 into [sp, 8]
+str r7, [sp, 8] // updates smallest
+
+.label sm_skip
+bal sm_loop
+
+.label sm_done
+ldr r0, [sp, 8]         // this loads the smallest in r0 //*** r0 is the return register
+ldr r14, [sp, 12]       // loads the correct address for link register back into r14
+
+adi r13, sp, 16 // adds imm 16 back on to the stack 
+
+//mov r0, 2          // hardcode to return a 2
 		   // Deallocate stack
 mov r15, r14       // return
 
@@ -239,9 +277,11 @@ mov r0, 0
 str r0, [sp, 16]
 
 mva r0, string1
+mva r1, 5 // printing off this value
 blr printf
 
 mva r0, string2
+mva r1, 16 // printing off this value
 blr printf
 
 mov r0, 4
