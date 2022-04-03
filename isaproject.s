@@ -65,7 +65,27 @@
 // sum_array is a leaf function
 // If you only use r0, r1, r2, r3; you do not need a stack
 .label sum_array
-mov r0, 2          // hardcode to return a 2
+
+str r4, 0 // this is int s = 0
+str r5, 0 // this is the 0 used in the while loop condition
+
+.label loop_sum // the while loop needed to compute the sum
+ldr r6, [sp, 0] // this is the address of the array to sum
+cmp r5, r6      // *ia != 0
+bge done_sum        // branches to done if they equal
+
+add r7, r6, r4  // adding to s += *ia into r7
+
+ldr r6, [r13], 4         // this post increments the value of *ia 
+
+bal loop_sum  // branching back to loop_sum
+
+.label done_sum
+
+mov r0, r7
+
+//ldr r14, [sp, 28]
+
 mov r15, r14       // return
 
 .text 0x400
@@ -75,16 +95,43 @@ mov r15, r14       // return
 // Save lr on stack and allocate space for local vars
 .label cmp_arrays
 //***
-sbi sp, sp, 60 // subtracting 60 bytes, 14 (4 bytes) for the static array values, and 4 for the lr
 
-// this immediately uses sum_array()
+sbi sp, sp, 32 // 28 bytes for the array and 4 for lr
+str r14, [sp, 28] // storing the lr at sp byte 28
 
+str r0, [sp, 0] // storing the first array (each static array takes a max of 28 bytes)
+
+bal sum_array                   // Call sum_array two times
+
+mov r5, r0 // moving the first return value to r5
+
+// In the case the the smaller array is called I need to reset the values of the sp to 0
+mov r9, 0
+str r9, [sp, 0]
+str r9, [sp, 4]
+str r9, [sp, 8]
+str r9, [sp, 12]
+str r9, [sp, 16]
+str r9, [sp, 20]
+str r9, [sp, 24]
+
+str r1, [sp, 0] // storing the second array (each static array takes a max of 28 bytes)
+
+bal sum_array                   // Call sum_array two times
+
+mov r6, r0 // moving the second return value to r6
+
+// now I need to call printf
+mva r0, cmp_print
+mov r1, r5 // moving the answers to the print argument registers
+mov r2, r6
+blr printf
 //***
 
                    // Allocate stack
                    // Call sum_array two times
-mov r0, -1         // hardcode to return -1
-		   // Deallocate stack
+//mov r0, -1         // hardcode to return -1
+adi r13, sp, 32		   // Deallocate stack
 mov r15, r14       // return
 
 .text 0x500
@@ -275,6 +322,11 @@ mov r0, 1
 str r0, [sp, 12]
 mov r0, 0
 str r0, [sp, 16]
+
+// I need to call cmp_arrays here
+mov r0, sia // must move the arrays to the registers before calling
+mov r1, sib
+bal cmp_arrays
 
 mva r0, string1
 mva r1, 5 // printing off this value
