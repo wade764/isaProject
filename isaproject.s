@@ -28,11 +28,14 @@
 50
 0
 //***
-// two labels below used in sort // *** I am questioning if these are needed
-.label s
+.label s // used in sum_array and sort
 0 // temp value should equal the numelems(ia)
-.label t
+.label t // used in sort
 0 // temp value should equal the numelems(ia)
+.label i // used in sort
+0
+.label j // used in sort
+0
 
 .label string1
 .string // cmp_arrays(sia, sib): %d
@@ -61,12 +64,13 @@
 .label fmt2
 .string //Something bad
 .text 0x300
+
 // r0 has ia - address of null terminated array
 // sum_array is a leaf function
 // If you only use r0, r1, r2, r3; you do not need a stack
 .label sum_array
 
-str r4, 0 // this is int s = 0
+str r4, s // this is int s = 0
 str r5, 0 // this is the 0 used in the while loop condition
 
 .label loop_sum // the while loop needed to compute the sum
@@ -156,8 +160,9 @@ cmp r1, 0 // comparing the value of r1 to r0 *ia++ != 0
           // *ia == 0
 
 // JUNK // adi sp, sp, 4 // incrementing the sp r13
-//JUNK //adi r2, [r2, 1] // *** I am confused how to add to the counter variable
-//JUNK  blt while1 // branching if the value != 0
+// JUNK //adi r2, [r2, 1] // *** I am confused how to add to the counter variable
+// JUNK  blt while1 // branching if the value != 0
+
 beq done_numelems
 adi r2, r2, 1
 bal loop_numelems
@@ -181,29 +186,34 @@ mov r15, r14 // moves the link register to the program counter
 // int literal 1
 sbi sp, sp, 16     // Allocate stack  // sub 16 because there are 4 variables s, t, i, j
 
-mov r1, 0
+mov r1, s
 str r1, [sp, 0] // variable s = 0
-mov r1, 0
+mov r1, t
 str r1, [sp, 4] // variable t = 0
-mov r1, 0
+// *** STUCK HERE
+// how do I allocate mem for i and j if I have to post increment i and j
+mov r1, i
 str r1, [sp, 8] // variable i = 0
-mov r1, 0
+mov r1, j
 str r1, [sp, 12] // variable j = 0
 
 
 blr numelems       // count elements in ia[] // *** the sp should be shift up 16 bytes
-// numelems returns and the num is stored in r2
+// numelems returns and the num is stored in r0
 
-str r2, [sp, 0]    // s = numelems(ia)
+str r0, [sp, 0]    // s = numelems(ia)
 
                    // create nested loops to sort
 .label for1
 str r1, [sp, 8] // counter i = 0
-cmp r1, r2      // i < s
+cmp r1, r2      // i < s, s is the numelems
 // STUCK HERE
 // blt // *** trouble thinking of how to for nested for loops here
 
-
+// STUCK I dont know how to post increment the [sp, 8] and there is an issue with variable j because it is 
+// located at [sp, 12]
+mov r5, [sp, 8]
+ldr r1, [r5], 4 // post increment of i
                    // Deallocate stack
 mov r15, r14       // return - sort is a void function
 
@@ -302,52 +312,67 @@ mov r15, r14       // return
 // }
 .label main
 //***
-// added code below 
 // int ia[] = {2,3,5,1,0};
 // allocating mem on stack for array
-sbi sp, sp, 24 // allocate space for stack // I had this at 20 but think 24 is right now
-                   // [sp,0] is int 2
-                   // [sp,4] is int 3
-                   // [sp,8] is int 5
-                   // [sp,12] is int 1
-                   // [sp,16] is int 0
-str lr, [sp, 20]   // [sp,20] is lr (save lr)
-mov r0, 2
+sbi sp, sp, 24 // allocate space for stack
+                   
+mov r0, 2          // [sp,0] is int 2
 str r0, [sp, 0]
-mov r0, 3
+mov r0, 3          // [sp,4] is int 3
 str r0, [sp, 4]
-mov r0, 5
-str r0, [sp, 8]
-mov r0, 1
-str r0, [sp, 12]
-mov r0, 0
+mov r0, 5          // [sp,8] is int 5
+str r0, [sp, 8]    
+mov r0, 1          // [sp,12] is int 1
+str r0, [sp, 12]   
+mov r0, 0          // [sp,16] is int 0
 str r0, [sp, 16]
+str lr, [sp, 20]   // [sp,20] is lr (save lr)
 
-// I need to call cmp_arrays here
+// calling cmp_arrays with (sia,sib)
 mov r0, sia // must move the arrays to the registers before calling
 mov r1, sib
-bal cmp_arrays
+// *** BUG calling cmp_arrays leads to an ILLEGAL INSTRUCTION ERROR
+//bal cmp_arrays
 
+//mov r1, r0
 mva r0, string1
-mva r1, 5 // printing off this value
+mva r1, 5 // printing off this temp value
 blr printf
 
+// calling cmp_arrays with (sia,sia)
+mov r0, sia // must move the arrays to the registers before calling
+mov r1, sia
+//bal cmp_arrays
+
+//mov r1, r0
 mva r0, string2
-mva r1, 16 // printing off this value
+mva r1, 16 // printing off this temp value
 blr printf
 
+// sib[0] = 4
 mov r0, 4
 mva r1, sib
 str r0, [r1, 0]
 
-mva r0, string1
+// calling cmp_arrays with (sia,sib) second time
+mov r0, sia // must move the arrays to the registers before calling
+mov r1, sib
+//bal cmp_arrays
+
 //mov r1, r0
-//mva r0, string1
+mva r0, string1
 blr printf
 
+// calling cmp_arrays with (ia,sia)
+mov r0, sp // must move the arrays to the registers before calling
+mov r1, sia
+//bal cmp_arrays
+
+//mov r1, r0
 mva r0, string3
 blr printf
 
+// calling sort(ia)
 mov r0, sp
 bal sort // this is calling sort(ia) the sp is at ia[0] 
 // code above is added
