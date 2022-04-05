@@ -6,6 +6,10 @@
 // Define stack start address
 .stack 0x5000
 
+// Define address of scanf
+.text 0x7050
+.label scanf
+
 // Define address of printf
 .text 0x7000
 .label printf
@@ -28,7 +32,7 @@
 50
 0
 //***
-.label s // used in sum_array and sort
+.label s // used in and sort
 0 // temp value should equal the numelems(ia)
 .label t // used in sort
 0 // temp value should equal the numelems(ia)
@@ -368,22 +372,22 @@ mva r1, sib
 // *** BUG calling cmp_arrays leads to an ILLEGAL INSTRUCTION ERROR
 blr cmp_arrays
 
-.label stop
-bal stop
+//.label stop
+//bal stop
 
-//mov r1, r0
+mva r1, r0
 mva r0, string1
-mva r1, 5 // printing off this temp value
+//mva r1, 5 // printing off this temp value
 blr printf
 
 // calling cmp_arrays with (sia,sia)
 mov r0, sia // must move the arrays to the registers before calling
 mov r1, sia
-//blr cmp_arrays
+blr cmp_arrays
 
-//mov r1, r0
+mva r1, r0
 mva r0, string2
-mva r1, 16 // printing off this temp value
+//mva r1, 16 // printing off this temp value
 blr printf
 
 // sib[0] = 4
@@ -394,18 +398,18 @@ str r0, [r1, 0]
 // calling cmp_arrays with (sia,sib) second time
 mov r0, sia // must move the arrays to the registers before calling
 mov r1, sib
-//blr cmp_arrays
+blr cmp_arrays
 
-//mov r1, r0
+mva r1, r0
 mva r0, string1
 blr printf
 
 // calling cmp_arrays with (ia,sia)
-mov r0, sp // must move the arrays to the registers before calling
+mva r0, sp // must move the arrays to the registers before calling
 mov r1, sia
-//blr cmp_arrays
+blr cmp_arrays
 
-//mov r1, r0
+mva r1, r0
 mva r0, string3
 blr printf
 
