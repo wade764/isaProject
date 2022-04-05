@@ -70,25 +70,20 @@
 // If you only use r0, r1, r2, r3; you do not need a stack
 .label sum_array
 
-str r4, s // this is int s = 0
-str r5, 0 // this is the 0 used in the while loop condition
+mov r1, 0 // this is int s = 0
 
 .label loop_sum // the while loop needed to compute the sum
-ldr r6, [sp, 0] // this is the address of the array to sum
-cmp r5, r6      // *ia != 0
-bge done_sum        // branches to done if they equal
+ldr r2, [r0], 4 // this is the address of the array to sum
+cmp r2, 0      // *ia != 0
+beq done_sum        // branches to done if they equal
 
-add r7, r6, r4  // adding to s += *ia into r7
-
-ldr r6, [r13], 4         // this post increments the value of *ia 
+add r1, r1, r2  // adding to s += *ia into r7
 
 bal loop_sum  // branching back to loop_sum
 
 .label done_sum
 
-mov r0, r7
-
-//ldr r14, [sp, 28]
+mov r0, r1
 
 mov r15, r14       // return
 
@@ -100,43 +95,82 @@ mov r15, r14       // return
 .label cmp_arrays
 //***
 
-sbi sp, sp, 32 // 28 bytes for the array and 4 for lr
-str r14, [sp, 28] // storing the lr at sp byte 28
+sbi sp, sp, 20 // 28 bytes for the array and 4 for lr
+str r14, [sp, 16] // storing the lr at sp byte 28
 
 str r0, [sp, 0] // storing the first array (each static array takes a max of 28 bytes)
 
-bal sum_array                   // Call sum_array two times
+                // we are storing just the address of the array
+str r1, [sp, 4] // storing the second array (each static array takes a max of 28 bytes)
+
+
+blr sum_array                   // Call sum_array two times
+
+str r0, [sp, 8]
+
+ldr r0, [sp, 4] // loading the second array into r0
+
+blr sum_array
+
+str r0, [sp, 12]
+
+ldr r0, [sp, 8]
+
+ldr r1, [sp, 12]
+
+cmp r0, r1
+
+beq return_0
+
+bgt return_1
+
+mov r0, -1
+bal return
+
+.label return_0
+mov r0, 0
+bal return
+
+.label return_1
+mov r0, 1
+
+.label return
+
+ldr r14, [sp, 16]
+
+adi sp, sp, 20
+
+mov r15, r14
 
 mov r5, r0 // moving the first return value to r5
 
 // In the case the the smaller array is called I need to reset the values of the sp to 0
-mov r9, 0
-str r9, [sp, 0]
-str r9, [sp, 4]
-str r9, [sp, 8]
-str r9, [sp, 12]
-str r9, [sp, 16]
-str r9, [sp, 20]
-str r9, [sp, 24]
-
-str r1, [sp, 0] // storing the second array (each static array takes a max of 28 bytes)
-
-bal sum_array                   // Call sum_array two times
-
-mov r6, r0 // moving the second return value to r6
-
-// now I need to call printf
-mva r0, cmp_print
-mov r1, r5 // moving the answers to the print argument registers
-mov r2, r6
-blr printf
+//mov r9, 0
+//str r9, [sp, 0]
+//str r9, [sp, 4]
+//str r9, [sp, 8]
+//str r9, [sp, 12]
+//str r9, [sp, 16]
+//str r9, [sp, 20]
+//str r9, [sp, 24]
+//
+//
+//blr sum_array                   // Call sum_array two times
+//
+//mov r6, r0 // moving the second return value to r6
+//
+//// now I need to call printf
+//mva r0, cmp_print
+//mov r1, r5 // moving the answers to the print argument registers
+//mov r2, r6
+//blr printf
 //***
 
                    // Allocate stack
                    // Call sum_array two times
 //mov r0, -1         // hardcode to return -1
-adi r13, sp, 32		   // Deallocate stack
-mov r15, r14       // return
+//adi r13, sp, 32		   // Deallocate stack
+//mov r15, r14       // return
 
 .text 0x500
 
@@ -210,9 +244,9 @@ cmp r1, r2      // i < s, s is the numelems
 // STUCK HERE
 // blt // *** trouble thinking of how to for nested for loops here
 
-// STUCK I dont know how to post increment the [sp, 8] and there is an issue with variable j because it is 
+// STUCK I dont know how to post increment the [sp, 8]*** remove static var 
 // located at [sp, 12]
-mov r5, [sp, 8]
+ldr r5, [sp, 8]
 ldr r1, [r5], 4 // post increment of i
                    // Deallocate stack
 mov r15, r14       // return - sort is a void function
@@ -329,10 +363,13 @@ str r0, [sp, 16]
 str lr, [sp, 20]   // [sp,20] is lr (save lr)
 
 // calling cmp_arrays with (sia,sib)
-mov r0, sia // must move the arrays to the registers before calling
-mov r1, sib
+mva r0, sia // must move the arrays to the registers before calling
+mva r1, sib
 // *** BUG calling cmp_arrays leads to an ILLEGAL INSTRUCTION ERROR
-//bal cmp_arrays
+blr cmp_arrays
+
+.label stop
+bal stop
 
 //mov r1, r0
 mva r0, string1
@@ -342,7 +379,7 @@ blr printf
 // calling cmp_arrays with (sia,sia)
 mov r0, sia // must move the arrays to the registers before calling
 mov r1, sia
-//bal cmp_arrays
+//blr cmp_arrays
 
 //mov r1, r0
 mva r0, string2
@@ -357,7 +394,7 @@ str r0, [r1, 0]
 // calling cmp_arrays with (sia,sib) second time
 mov r0, sia // must move the arrays to the registers before calling
 mov r1, sib
-//bal cmp_arrays
+//blr cmp_arrays
 
 //mov r1, r0
 mva r0, string1
@@ -366,7 +403,7 @@ blr printf
 // calling cmp_arrays with (ia,sia)
 mov r0, sp // must move the arrays to the registers before calling
 mov r1, sia
-//bal cmp_arrays
+//blr cmp_arrays
 
 //mov r1, r0
 mva r0, string3
