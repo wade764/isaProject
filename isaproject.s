@@ -32,14 +32,14 @@
 50
 0
 //***
-.label s // used in and sort
-0 // temp value should equal the numelems(ia)
-.label t // used in sort
-0 // temp value should equal the numelems(ia)
-.label i // used in sort
-0
-.label j // used in sort
-0
+//.label s // used in and sort
+//0 // temp value should equal the numelems(ia)
+//.label t // used in sort
+//0 // temp value should equal the numelems(ia)
+//.label i // used in sort
+//0
+//.label j // used in sort
+//0
 
 .label string1
 .string // cmp_arrays(sia, sib): %d
@@ -98,29 +98,28 @@ mov r15, r14       // return
 // Save lr on stack and allocate space for local vars
 .label cmp_arrays
 //***
+sbi sp, sp, 20 // 16 bytes for the addresses and 4 for lr
+str r14, [sp, 16] // storing the lr at sp byte 16
+str r0, [sp, 0] // storing the address first array
+str r1, [sp, 4] // storing the address second array
 
-sbi sp, sp, 20 // 28 bytes for the array and 4 for lr
-str r14, [sp, 16] // storing the lr at sp byte 28
-
-str r0, [sp, 0] // storing the first array (each static array takes a max of 28 bytes)
-
-                // we are storing just the address of the array
-str r1, [sp, 4] // storing the second array (each static array takes a max of 28 bytes)
-
-
-blr sum_array                   // Call sum_array two times
-
-str r0, [sp, 8]
+blr sum_array   // Call sum_array two times
+str r0, [sp, 8] // int s1
 
 ldr r0, [sp, 4] // loading the second array into r0
 
 blr sum_array
+str r0, [sp, 12] // int s2
+// print cmp_print here
+ldr r5, [sp, 8]
+ldr r6, [sp, 12]
+mva r1, r5
+mva r2, r6
+mva r0, cmp_print
+blr printf
 
-str r0, [sp, 12]
-
-ldr r0, [sp, 8]
-
-ldr r1, [sp, 12]
+ldr r0, [sp, 8] // int s1
+ldr r1, [sp, 12] // int s2
 
 cmp r0, r1
 
@@ -145,36 +144,7 @@ ldr r14, [sp, 16]
 adi sp, sp, 20
 
 mov r15, r14
-
-mov r5, r0 // moving the first return value to r5
-
-// In the case the the smaller array is called I need to reset the values of the sp to 0
-//mov r9, 0
-//str r9, [sp, 0]
-//str r9, [sp, 4]
-//str r9, [sp, 8]
-//str r9, [sp, 12]
-//str r9, [sp, 16]
-//str r9, [sp, 20]
-//str r9, [sp, 24]
-//
-//
-//blr sum_array                   // Call sum_array two times
-//
-//mov r6, r0 // moving the second return value to r6
-//
-//// now I need to call printf
-//mva r0, cmp_print
-//mov r1, r5 // moving the answers to the print argument registers
-//mov r2, r6
-//blr printf
 //***
-
-                   // Allocate stack
-                   // Call sum_array two times
-//mov r0, -1         // hardcode to return -1
-//adi r13, sp, 32		   // Deallocate stack
-//mov r15, r14       // return
 
 .text 0x500
 
@@ -222,17 +192,21 @@ mov r15, r14 // moves the link register to the program counter
 // two nested for loops, variables i, j
 // int t used as a temp variable
 // int literal 1
-sbi sp, sp, 16     // Allocate stack  // sub 16 because there are 4 variables s, t, i, j
+sbi sp, sp, 20     // sub 20 because there are 4 variables s, t, i, j and the lr
 
-mov r1, s
+str r14, [sp, 16] // storing the lr
+
+mov r1, 0
 str r1, [sp, 0] // variable s = 0
-mov r1, t
+
 str r1, [sp, 4] // variable t = 0
 // *** STUCK HERE
 // how do I allocate mem for i and j if I have to post increment i and j
-mov r1, i
+//mov r1, i
+//mov r1, 0
 str r1, [sp, 8] // variable i = 0
-mov r1, j
+//mov r1, j
+//mov r1, 0
 str r1, [sp, 12] // variable j = 0
 
 
@@ -415,7 +389,7 @@ blr printf
 
 // calling sort(ia)
 mov r0, sp
-bal sort // this is calling sort(ia) the sp is at ia[0] 
+blr sort // this is calling sort(ia) the sp is at ia[0] 
 // code above is added
 //***
 
