@@ -153,29 +153,21 @@ mov r15, r14
 // If you only use r0, r1, r2, r3; you do not need a stack
 .label numelems
 //***
-// JUNK //mov r1, 0 //this is the literal 0
+
 mov r2, 0 //this is the counter variable c
-// JUNK //adi sp, sp, 16 // adding to the stack pointer 16 to get the starting address
-               // of ia[0] that holds 5 elements
-// JUNK //str r3, [sp, 0] // moving the value of the stack pointer into r1
 .label loop_numelems // the while loop
-// JUNK //str r3, sp
-// JUNK //ldr r3, [r0]
 ldr r1, [r0], 4  // this is a post increment equivalent to ia[0]++
                  //*ia to r0, ia++
 
 cmp r1, 0 // comparing the value of r1 to r0 *ia++ != 0
           // *ia == 0
 
-// JUNK // adi sp, sp, 4 // incrementing the sp r13
-// JUNK //adi r2, [r2, 1] // *** I am confused how to add to the counter variable
-// JUNK  blt while1 // branching if the value != 0
-
 beq done_numelems
-adi r2, r2, 1
+adi r2, r2, 1 // adding one to counter c++
 bal loop_numelems
 .label done_numelems
-mov r0, r2
+
+mov r0, r2 // returning c
 mov r15, r14 // moves the link register to the program counter
 //***
 
@@ -192,41 +184,57 @@ mov r15, r14 // moves the link register to the program counter
 // two nested for loops, variables i, j
 // int t used as a temp variable
 // int literal 1
-sbi sp, sp, 20     // sub 20 because there are 4 variables s, t, i, j and the lr
+sbi sp, sp, 24     // sub 20 because there are 4 variables s, t, i, j and the lr
 
 str r14, [sp, 16] // storing the lr
 
 mov r1, 0
-str r1, [sp, 0] // variable s = 0
 
 str r1, [sp, 4] // variable t = 0
-// *** STUCK HERE
-// how do I allocate mem for i and j if I have to post increment i and j
-//mov r1, i
-//mov r1, 0
 str r1, [sp, 8] // variable i = 0
-//mov r1, j
-//mov r1, 0
 str r1, [sp, 12] // variable j = 0
-
+str r0, [sp, 20] // storing the address of the array pointer argument
+ldr r6, [sp, 20] // loading the address of the array into r6
 
 blr numelems       // count elements in ia[] // *** the sp should be shift up 16 bytes
 // numelems returns and the num is stored in r0
 
 str r0, [sp, 0]    // s = numelems(ia)
-
-                   // create nested loops to sort
+ldr r9, [sp, 0]                   
+// create nested loops to sort
 .label for1
-str r1, [sp, 8] // counter i = 0
-cmp r1, r2      // i < s, s is the numelems
-// STUCK HERE
-// blt // *** trouble thinking of how to for nested for loops here
+//str r1, [sp, 8] // counter i = 0
+ldr r1, [r1], 4 // i++ post-index
+cmp r1, r9      // i < s, s is the numelems
+bgt done_ne // loop exits if i is greater than s
+// now entering second for loop
+.label for2
+ldr r2, [sp, 12] // j = 0
+// s-1-i
+mov r3, r0 // moving s(numelems) into r3
+sbi r3, r3, 1 // s - 1
+sub r3, r3, r1 // s - 1 - i
+cmp r2, r3 // j < s-1-i
+bgt for1
+// now at if statement
+ldr r7, [r6, 4]! // loading r7 with the arrays next value
+cmp r6, r7 //ia[j] > ia[j+1]
+ldr r2, [r2, 4]! // j++ pre-index
 
-// STUCK I dont know how to post increment the [sp, 8]*** remove static var 
-// located at [sp, 12]
-ldr r5, [sp, 8]
-ldr r1, [r5], 4 // post increment of i
-                   // Deallocate stack
+blt for2 // going to the next inner loop sequence
+
+ldr r8, [sp, 4] // loading t into r8
+str r6, [r8] // t = ia[j]
+str r7, [r6] // ia[j] = ia[j+1]
+str r8, [r7] // ia[j+1] = t
+
+ldr r6, [r6, 4]! // incrementing to the next index of the array
+// I THINK THERE IS SOMETHING WRONG WITH WHERE THE LINE ABOVE IS LOCATED
+bal for2 // continuing the loop
+
+.label done_ne
+
+adi r13, r13, 24   // Deallocate stack
 mov r15, r14       // return - sort is a void function
 
 .text 0x700
@@ -387,9 +395,31 @@ mva r1, r0
 mva r0, string3
 blr printf
 
+// STUCK IN AN INFINITE LOOP AT SORT
 // calling sort(ia)
 mov r0, sp
 blr sort // this is calling sort(ia) the sp is at ia[0] 
+
+mov r3, sp
+//    for (int i = 0; i < numelems(ia); i++)
+mov r0, sp
+blr numelems
+// returns and the numelems is in r0
+.label Mfor1
+ldr r2, 0 // i = 0
+ldr r2, [r2], 4 // post-increment i++
+cmp r2, r0
+bgt Mfor1_done
+
+mva r1, fmt3
+// i is already in r2
+// ia[i]
+// I am confused on how to increment ia[i]
+ker #0x11
+
+ldr r3, [r3, 4]! // incrementing the ia array
+
+.label Mfor1_done
 // code above is added
 //***
 
