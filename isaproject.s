@@ -7,8 +7,8 @@
 .stack 0x5000
 
 // Define address of scanf
-.text 0x7050
-.label scanf
+//.text 0x7050
+//.label scanf
 
 // Define address of printf
 .text 0x7000
@@ -313,15 +313,16 @@ mov r15, r14       // return
 // Save lr on stack and allocate space for local vars
 .label factorial
 //***
-mov r2, 1
+mov r3, 1
+mov r2, r0
 // implemented code from, http://ianfinlayson.net/class/cpsc305/notes/17-assembly2
-sub r1, r0, r1 // this subtract 1 from n and returns if the value equals 0
+sub r2, r2, r3 // this subtract 1 from n and returns if the value equals 0
 .label top_fact
-cmp r1, 0 // if it equals zero we are done so return it (n was 1)
+cmp r2, 0 // if it equals zero we are done so return it (n was 1)
 beq done_fact
 
-mul r0, r1, r0 // multiplying n * (n -1) 
-sub r1, r1, r2 // then subtracting 1 from r1 and branching back to top
+mul r0, r0, r2 // multiplying n * (n -1) 
+sub r2, r2, r3 // then subtracting 1 from r1 and branching back to top
 
 bal top_fact
 
@@ -351,67 +352,65 @@ mov r15, r14
 //***
 // int ia[] = {2,3,5,1,0};
 // allocating mem on stack for array
-//sbi sp, sp, 24 // allocate space for stack
-//                   
-//mov r0, 2          // [sp,0] is int 2
-//str r0, [sp, 0]
-//mov r0, 3          // [sp,4] is int 3
-//str r0, [sp, 4]
-//mov r0, 5          // [sp,8] is int 5
-//str r0, [sp, 8]    
-//mov r0, 1          // [sp,12] is int 1
-//str r0, [sp, 12]   
-//mov r0, 0          // [sp,16] is int 0
-//str r0, [sp, 16]
-//str lr, [sp, 20]   // [sp,20] is lr (save lr)
-//
-//// calling cmp_arrays with (sia,sib)
-//mva r0, sia // must move the arrays to the registers before calling
-//mva r1, sib
-//blr cmp_arrays
-//
-////.label stop
-////bal stop
-//
-//mva r1, r0
-//mva r0, string1
-////mva r1, 5 // printing off this temp value
-//blr printf
-//
-//// calling cmp_arrays with (sia,sia)
-//mov r0, sia // must move the arrays to the registers before calling
-//mov r1, sia
-//blr cmp_arrays
-//
-//mva r1, r0
-//mva r0, string2
-////mva r1, 16 // printing off this temp value
-//blr printf
-//
-//// sib[0] = 4
-//mov r0, 4
-//mva r1, sib
-//str r0, [r1, 0]
-//
-//// calling cmp_arrays with (sia,sib) second time
-//mov r0, sia // must move the arrays to the registers before calling
-//mov r1, sib
-//blr cmp_arrays
-//
-//mva r1, r0
-//mva r0, string1
-//blr printf
-//
-//// calling cmp_arrays with (ia,sia)
-//mva r0, sp // must move the arrays to the registers before calling
-//mov r1, sia
-//blr cmp_arrays
-//
-//mva r1, r0
-//mva r0, string3
-//blr printf
+sbi sp, sp, 24 // allocate space for stack
+                   
+mov r0, 2          // [sp,0] is int 2
+str r0, [sp, 0]
+mov r0, 3          // [sp,4] is int 3
+str r0, [sp, 4]
+mov r0, 5          // [sp,8] is int 5
+str r0, [sp, 8]    
+mov r0, 1          // [sp,12] is int 1
+str r0, [sp, 12]   
+mov r0, 0          // [sp,16] is int 0
+str r0, [sp, 16]
+str lr, [sp, 20]   // [sp,20] is lr (save lr)
 
-// comment out for test
+// calling cmp_arrays with (sia,sib)
+mva r0, sia // must move the arrays to the registers before calling
+mva r1, sib
+blr cmp_arrays
+
+//.label stop
+//bal stop
+
+mva r1, r0
+mva r0, string1
+//mva r1, 5 // printing off this temp value
+blr printf
+
+// calling cmp_arrays with (sia,sia)
+mov r0, sia // must move the arrays to the registers before calling
+mov r1, sia
+blr cmp_arrays
+
+mva r1, r0
+mva r0, string2
+//mva r1, 16 // printing off this temp value
+blr printf
+
+// sib[0] = 4
+mov r0, 4
+mva r1, sib
+str r0, [r1, 0]
+
+// calling cmp_arrays with (sia,sib) second time
+mov r0, sia // must move the arrays to the registers before calling
+mov r1, sib
+blr cmp_arrays
+
+mva r1, r0
+mva r0, string1
+blr printf
+
+// calling cmp_arrays with (ia,sia)
+mva r0, sp // must move the arrays to the registers before calling
+mov r1, sia
+blr cmp_arrays
+
+mva r1, r0
+mva r0, string3
+blr printf
 
 // STUCK IN AN INFINITE LOOP AT SORT COMMENTING OUT FOR COMPILE
 // calling sort(ia)
