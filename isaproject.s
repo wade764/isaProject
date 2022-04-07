@@ -312,12 +312,29 @@ mov r15, r14       // return
 // factorial must allocate a stack
 // Save lr on stack and allocate space for local vars
 .label factorial
+//***
+mov r2, 1
+// implemented code from, http://ianfinlayson.net/class/cpsc305/notes/17-assembly2
+sub r1, r0, r1 // this subtract 1 from n and returns if the value equals 0
+.label top_fact
+cmp r1, 0 // if it equals zero we are done so return it (n was 1)
+beq done_fact
+
+mul r0, r1, r0 // multiplying n * (n -1) 
+sub r1, r1, r2 // then subtracting 1 from r1 and branching back to top
+
+bal top_fact
+
+.label done_fact
+mov r15, r14
+//***
+
                    // Allocate stack
 		   // implement algorithm
 //blr factorial    // factorial calls itself
 		   // Deallocate stack
-mov r0, 120        // hardcode 5! as return value
-mov r15, r14       // return
+//mov r0, 120        // hardcode 5! as return value
+//mov r15, r14       // return
 
 .text 0x900
 // This sample main implements the following
@@ -334,156 +351,172 @@ mov r15, r14       // return
 //***
 // int ia[] = {2,3,5,1,0};
 // allocating mem on stack for array
-sbi sp, sp, 24 // allocate space for stack
-                   
-mov r0, 2          // [sp,0] is int 2
-str r0, [sp, 0]
-mov r0, 3          // [sp,4] is int 3
-str r0, [sp, 4]
-mov r0, 5          // [sp,8] is int 5
-str r0, [sp, 8]    
-mov r0, 1          // [sp,12] is int 1
-str r0, [sp, 12]   
-mov r0, 0          // [sp,16] is int 0
-str r0, [sp, 16]
-str lr, [sp, 20]   // [sp,20] is lr (save lr)
+//sbi sp, sp, 24 // allocate space for stack
+//                   
+//mov r0, 2          // [sp,0] is int 2
+//str r0, [sp, 0]
+//mov r0, 3          // [sp,4] is int 3
+//str r0, [sp, 4]
+//mov r0, 5          // [sp,8] is int 5
+//str r0, [sp, 8]    
+//mov r0, 1          // [sp,12] is int 1
+//str r0, [sp, 12]   
+//mov r0, 0          // [sp,16] is int 0
+//str r0, [sp, 16]
+//str lr, [sp, 20]   // [sp,20] is lr (save lr)
+//
+//// calling cmp_arrays with (sia,sib)
+//mva r0, sia // must move the arrays to the registers before calling
+//mva r1, sib
+//blr cmp_arrays
+//
+////.label stop
+////bal stop
+//
+//mva r1, r0
+//mva r0, string1
+////mva r1, 5 // printing off this temp value
+//blr printf
+//
+//// calling cmp_arrays with (sia,sia)
+//mov r0, sia // must move the arrays to the registers before calling
+//mov r1, sia
+//blr cmp_arrays
+//
+//mva r1, r0
+//mva r0, string2
+////mva r1, 16 // printing off this temp value
+//blr printf
+//
+//// sib[0] = 4
+//mov r0, 4
+//mva r1, sib
+//str r0, [r1, 0]
+//
+//// calling cmp_arrays with (sia,sib) second time
+//mov r0, sia // must move the arrays to the registers before calling
+//mov r1, sib
+//blr cmp_arrays
+//
+//mva r1, r0
+//mva r0, string1
+//blr printf
+//
+//// calling cmp_arrays with (ia,sia)
+//mva r0, sp // must move the arrays to the registers before calling
+//mov r1, sia
+//blr cmp_arrays
+//
+//mva r1, r0
+//mva r0, string3
+//blr printf
 
-// calling cmp_arrays with (sia,sib)
-mva r0, sia // must move the arrays to the registers before calling
-mva r1, sib
-// *** BUG calling cmp_arrays leads to an ILLEGAL INSTRUCTION ERROR
-blr cmp_arrays
+// comment out for test
 
-//.label stop
-//bal stop
-
-mva r1, r0
-mva r0, string1
-//mva r1, 5 // printing off this temp value
-blr printf
-
-// calling cmp_arrays with (sia,sia)
-mov r0, sia // must move the arrays to the registers before calling
-mov r1, sia
-blr cmp_arrays
-
-mva r1, r0
-mva r0, string2
-//mva r1, 16 // printing off this temp value
-blr printf
-
-// sib[0] = 4
-mov r0, 4
-mva r1, sib
-str r0, [r1, 0]
-
-// calling cmp_arrays with (sia,sib) second time
-mov r0, sia // must move the arrays to the registers before calling
-mov r1, sib
-blr cmp_arrays
-
-mva r1, r0
-mva r0, string1
-blr printf
-
-// calling cmp_arrays with (ia,sia)
-mva r0, sp // must move the arrays to the registers before calling
-mov r1, sia
-blr cmp_arrays
-
-mva r1, r0
-mva r0, string3
-blr printf
-
-// STUCK IN AN INFINITE LOOP AT SORT
+// STUCK IN AN INFINITE LOOP AT SORT COMMENTING OUT FOR COMPILE
 // calling sort(ia)
-mov r0, sp
-blr sort // this is calling sort(ia) the sp is at ia[0] 
+//mov r0, sp
+//blr sort // this is calling sort(ia) the sp is at ia[0] 
 
-mov r3, sp
-//    for (int i = 0; i < numelems(ia); i++)
-mov r0, sp
-blr numelems
-// returns and the numelems is in r0
-.label Mfor1
-ldr r2, 0 // i = 0
-ldr r2, [r2], 4 // post-increment i++
-cmp r2, r0
-bgt Mfor1_done
+//mov r3, sp
+////    for (int i = 0; i < numelems(ia); i++)
+//mov r0, sp
+//blr numelems
+//// returns and the numelems is in r0
+//.label Mfor1
+//ldr r2, 0 // i = 0
+//ldr r2, [r2], 4 // post-increment i++
+//cmp r2, r0
+//bgt Mfor1_done
+//
+//mva r1, fmt3
+//// i is already in r2
+//// ia[i]
+//// I am confused on how to increment ia[i]
+//ker #0x11
+//
+//ldr r3, [r3, 4]! // incrementing the ia array
+//
+//.label Mfor1_done
 
-mva r1, fmt3
-// i is already in r2
-// ia[i]
-// I am confused on how to increment ia[i]
-ker #0x11
+mov r0, 4 // loading 4 into r0 and calling factorial
+blr factorial
+mva r1, r0 // moving the returned value into r1
+mva r0, factorial1
+blr printf
 
-ldr r3, [r3, 4]! // incrementing the ia array
+mov r0, 7 // loading 4 into r0 and calling factorial
+blr factorial
+mva r1, r0 // moving the returned value into r1
+mva r0, factorial1
+blr printf
 
-.label Mfor1_done
 // code above is added
 //***
 
-sbi sp, sp, 16     // allocate space for stack
-                   // [sp,0] is int cav
-                   // [sp,4] is int n
-                   // [sp,8] is int sm1
-str lr, [sp, 12]   // [sp,12] is lr (save lr)
-mov r0, 0
-str r0, [sp, 0]    // cav = 0;
-str r0, [sp, 4]    // n = 0;
-str r0, [sp, 8]    // sm1 = 0;
-// printf("Something bad");
-// Kernel call to printf expects parameters
-// r1 - address of format string - "Something bad"
-// mva r1, bad
-// ker #0x11
-// The os has code for printf at address 0x7000
-// The code there generates the ker instruction
-// You call printf with
-// r0 - has address of format string - "Something bad"
-mva r0, fmt2
-blr printf
-//
-// for (int i = 0; i < 4; i++)
-//     printf("ia[%d]: %d", i, sia[i]);
-mov r4, 0          // i to r4
-mva r5, sia   // address is sia to r5
-.label loop4times  // print 3 elements if sia
-cmp r4, 4
-bge end_loop4times
-// Kernel call to printf expects parameters
-// r1 - address of format string - "ia[%d]: %d"
-// r2 - value for first %d
-// r3 - value for second %d
-mva r1, fmt1       // fmt1 to r1
-mov r2, r4         // i to r2
-ldr r3, [r5], 4    // sia[i] to r3
-ker #0x11          // Kernel call to printf
-adi r4, r4, 1      // i++
-bal loop4times
-.label end_loop4times
-// int n = numelems(sia);
-mva r0, sia        // put address of sia in r0
-blr numelems       // n = numelems(sia)
-str r0, [sp, 4]
-//***
-mov r1, r0
-mva r0, fmt3
-blr printf
+// BELOW IS CODE FROM THE EXAMPLE PROVIDED
 
-// int sm1 = smallest(sia);
-mva r0, sia        // put address of sia in r0
-blr smallest       // sm1 = smallest(sia)
-str r0, [sp, 8]    // store return value in sm1
-// cav = cmp_arrays_sia, sib);
-mva r0, sia        // put address of sia in r0
-mva r1, sib        // put address of sib in r1
-blr cmp_arrays
-str r0, [sp, 0]
-// Do not deallocate stack.
-// This leaves r13 with an address that can be used to dump memory
-// > d 0x4ff0 
-// Shows the three hardcoded values stored in cav, n, and sm1.
-// 0x4ff0 (0d20464) 0xffffffff 0x0000000a 0x00000002
+//sbi sp, sp, 16     // allocate space for stack
+//                   // [sp,0] is int cav
+//                   // [sp,4] is int n
+//                   // [sp,8] is int sm1
+//str lr, [sp, 12]   // [sp,12] is lr (save lr)
+//mov r0, 0
+//str r0, [sp, 0]    // cav = 0;
+//str r0, [sp, 4]    // n = 0;
+//str r0, [sp, 8]    // sm1 = 0;
+//// printf("Something bad");
+//// Kernel call to printf expects parameters
+//// r1 - address of format string - "Something bad"
+//// mva r1, bad
+//// ker #0x11
+//// The os has code for printf at address 0x7000
+//// The code there generates the ker instruction
+//// You call printf with
+//// r0 - has address of format string - "Something bad"
+//mva r0, fmt2
+//blr printf
+////
+//// for (int i = 0; i < 4; i++)
+////     printf("ia[%d]: %d", i, sia[i]);
+//mov r4, 0          // i to r4
+//mva r5, sia   // address is sia to r5
+//.label loop4times  // print 3 elements if sia
+//cmp r4, 4
+//bge end_loop4times
+//// Kernel call to printf expects parameters
+//// r1 - address of format string - "ia[%d]: %d"
+//// r2 - value for first %d
+//// r3 - value for second %d
+//mva r1, fmt1       // fmt1 to r1
+//mov r2, r4         // i to r2
+//ldr r3, [r5], 4    // sia[i] to r3
+//ker #0x11          // Kernel call to printf
+//adi r4, r4, 1      // i++
+//bal loop4times
+//.label end_loop4times
+//// int n = numelems(sia);
+//mva r0, sia        // put address of sia in r0
+//blr numelems       // n = numelems(sia)
+//str r0, [sp, 4]
+////***
+//mov r1, r0
+//mva r0, fmt3
+//blr printf
+//
+//// int sm1 = smallest(sia);
+//mva r0, sia        // put address of sia in r0
+//blr smallest       // sm1 = smallest(sia)
+//str r0, [sp, 8]    // store return value in sm1
+//// cav = cmp_arrays_sia, sib);
+//mva r0, sia        // put address of sia in r0
+//mva r1, sib        // put address of sib in r1
+//blr cmp_arrays
+//str r0, [sp, 0]
+//// Do not deallocate stack.
+//// This leaves r13 with an address that can be used to dump memory
+//// > d 0x4ff0 
+//// Shows the three hardcoded values stored in cav, n, and sm1.
+//// 0x4ff0 (0d20464) 0xffffffff 0x0000000a 0x00000002
 .label end
 bal end            // branch to self
