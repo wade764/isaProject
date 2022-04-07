@@ -279,7 +279,8 @@ adi r2, r2, 24
 
 .label sm_loop    
 //***
-
+// THERE IS A BUG SOMEWHERE IN THIS AREA THAT LEADS
+// TO AN INFINITE LOOP
 ldr r4, [sp, 0] // this is p the int* in the loop
 cmp r4, r6      // p < ia+s
 bge sm_done        // branches to done if they equal
@@ -438,6 +439,8 @@ blr printf
 //
 //.label Mfor1_done
 
+// factorial portion of code
+
 mov r0, 4 // loading 4 into r0 and calling factorial
 blr factorial
 mva r1, r0 // moving the returned value into r1
@@ -449,6 +452,22 @@ blr factorial
 mva r1, r0 // moving the returned value into r1
 mva r0, factorial1
 blr printf
+
+// There is a bug somewhere in smallest that
+// leads to an infinite loop
+
+// smallest portion of code
+//mov r0, sp // moving the sp into r0 because it has the address of ia
+//blr smallest
+//mva r1, r0 // moving return value into r1
+//mva r0, smallest1
+//blr printf
+//
+//mov r0, sp // moving the sp into r0 because it has the address of ia
+//blr smallest
+//mva r1, r0 // moving return value into r1
+//mva r0, smallest2
+//blr printf
 
 // code above is added
 //***
